@@ -214,6 +214,16 @@ class PostCollector:
         """
         image_urls = self._extract_image_urls(submission)
 
+        # Extract flair information
+        link_flair_text = getattr(submission, 'link_flair_text', None)
+        link_flair_css_class = getattr(submission, 'link_flair_css_class', None)
+
+        # Extract author flair (if author exists)
+        author_flair_text = None
+        if submission.author:
+            author_flair_text = getattr(submission.author, 'flair_text', None) or \
+                              getattr(submission, 'author_flair_text', None)
+
         return {
             'id': submission.id,
             'subreddit': submission.subreddit.display_name,
@@ -227,7 +237,10 @@ class PostCollector:
             'url': submission.url,
             'is_nsfw': submission.over_18,
             'has_images': len(image_urls) > 0,
-            'image_urls': image_urls
+            'image_urls': image_urls,
+            'link_flair_text': link_flair_text,
+            'link_flair_css_class': link_flair_css_class,
+            'author_flair_text': author_flair_text
         }
 
     def _collect_comments(self, submission) -> int:

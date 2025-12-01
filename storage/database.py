@@ -66,8 +66,9 @@ class Database:
         cursor.execute("""
             INSERT INTO posts (
                 id, subreddit, title, selftext, author, score, num_comments,
-                created_utc, permalink, url, is_nsfw, collected_at, has_images, image_urls
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                created_utc, permalink, url, is_nsfw, collected_at, has_images, image_urls,
+                link_flair_text, link_flair_css_class, author_flair_text
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             post_data['id'],
             post_data['subreddit'],
@@ -82,7 +83,10 @@ class Database:
             post_data.get('is_nsfw', False),
             int(datetime.now().timestamp()),
             post_data.get('has_images', False),
-            json.dumps(post_data.get('image_urls', []))
+            json.dumps(post_data.get('image_urls', [])),
+            post_data.get('link_flair_text'),
+            post_data.get('link_flair_css_class'),
+            post_data.get('author_flair_text')
         ))
         self.conn.commit()
         logger.debug(f"Inserted post {post_data['id']}")

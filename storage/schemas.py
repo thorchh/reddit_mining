@@ -17,7 +17,10 @@ CREATE TABLE IF NOT EXISTS posts (
     is_nsfw BOOLEAN,
     collected_at INTEGER,
     has_images BOOLEAN,
-    image_urls TEXT
+    image_urls TEXT,
+    link_flair_text TEXT,
+    link_flair_css_class TEXT,
+    author_flair_text TEXT
 );
 """
 
@@ -64,6 +67,7 @@ CREATE TABLE IF NOT EXISTS collection_metadata (
 CREATE_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_posts_subreddit ON posts(subreddit);",
     "CREATE INDEX IF NOT EXISTS idx_posts_has_images ON posts(has_images);",
+    "CREATE INDEX IF NOT EXISTS idx_posts_link_flair ON posts(link_flair_text);",
     "CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);",
     "CREATE INDEX IF NOT EXISTS idx_comments_depth ON comments(depth);",
     "CREATE INDEX IF NOT EXISTS idx_consensus_post_id ON consensus(post_id);",

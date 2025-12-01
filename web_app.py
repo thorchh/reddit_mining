@@ -60,6 +60,39 @@ st.markdown("""
         margin: 0.5rem 0;
         border-radius: 0.25rem;
     }
+    .flair-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-right: 0.5rem;
+    }
+    .flair-solved {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .flair-likely {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    .flair-unsolved {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .flair-default {
+        background-color: #e7f3ff;
+        color: #004085;
+        border: 1px solid #b8daff;
+    }
+    .author-flair {
+        background-color: #f3e5f5;
+        color: #4a148c;
+        border: 1px solid #e1bee7;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -93,6 +126,27 @@ min_confidence = st.sidebar.slider(
 )
 
 show_nsfw = st.sidebar.checkbox("Include NSFW posts", value=False)
+
+# Get unique flairs for filter
+cursor = db.conn.cursor()
+cursor.execute("SELECT DISTINCT link_flair_text FROM posts WHERE link_flair_text IS NOT NULL ORDER BY link_flair_text")
+unique_flairs = [row[0] for row in cursor.fetchall()]
+selected_flair = st.sidebar.selectbox("Post Flair", ["All"] + unique_flairs) if unique_flairs else "All"
+
+# Helper functions
+def get_flair_class(flair_text):
+    """Get CSS class for flair badge based on text."""
+    if not flair_text:
+        return "flair-default"
+    flair_lower = flair_text.lower()
+    if "solved" in flair_lower and "likely" not in flair_lower:
+        return "flair-solved"
+    elif "likely" in flair_lower:
+        return "flair-likely"
+    elif "unsolved" in flair_lower or "open" in flair_lower:
+        return "flair-unsolved"
+    else:
+        return "flair-default"
 
 # Helper functions
 def get_confidence_class(confidence):
@@ -188,7 +242,8 @@ elif page == "Browse Posts":
     query = """
         SELECT p.id, p.subreddit, p.title, p.selftext, p.image_urls, p.score,
                p.num_comments, p.is_nsfw, p.created_utc, p.permalink,
-               c.consensus_answer, c.confidence_score, c.top_answers
+               c.consensus_answer, c.confidence_score, c.top_answers,
+               p.link_flair_text, p.link_flair_css_class, p.author_flair_text, p.author
         FROM posts p
         LEFT JOIN consensus c ON p.id = c.post_id
         WHERE p.has_images = 1
@@ -205,6 +260,10 @@ elif page == "Browse Posts":
     if min_confidence > 0:
         query += " AND c.confidence_score >= ?"
         params.append(min_confidence)
+
+    if selected_flair != "All":
+        query += " AND p.link_flair_text = ?"
+        params.append(selected_flair)
 
     query += " ORDER BY p.collected_at DESC LIMIT 20"
 
@@ -224,6 +283,17 @@ elif page == "Browse Posts":
             with col1:
                 st.markdown(f"### r/{row[1]}")
                 st.markdown(f"**{row[2]}**")
+
+                # Display flairs
+                flair_html = ""
+                if row[13]:  # link_flair_text
+                    flair_class = get_flair_class(row[13])
+                    flair_html += f'<span class="flair-badge {flair_class}">{row[13]}</span>'
+                if row[15] and row[16]:  # author_flair_text and author
+                    flair_html += f'<span class="flair-badge author-flair">u/{row[16]}: {row[15]}</span>'
+                if flair_html:
+                    st.markdown(flair_html, unsafe_allow_html=True)
+
             with col2:
                 st.metric("Score", row[5])
             with col3:

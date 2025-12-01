@@ -1,0 +1,27 @@
+medical:
+  - name: AskDocs
+    description: Medical advice with symptom images
+    allow_nsfw: true
+  - name: DermatologyQuestions
+    description: Skin condition identification
+    allow_nsfw: true
+  - name: medical_advice
+    description: General medical questions
+    allow_nsfw: true
+  - name: DiagnoseMe
+    description: Symptom diagnosis requests
+    allow_nsfw: true
+
+identification:
+  - name: whatisthisthing
+    description: General object identification
+    allow_nsfw: false
+  - name: whatsthisbug
+    description: Insect identification
+    allow_nsfw: false
+  - name: whatsthisplant
+    description: Plant identification
+    allow_nsfw: false
+  - name: whatsthisbird
+    description: Bird identification
+    allow_nsfw: false

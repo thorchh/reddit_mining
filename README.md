@@ -14,6 +14,7 @@ Multimodal LLMs/VLMs are more sycophantic than text-only LLMs because image unde
 - SQLite database storage
 - Export to JSONL for model evaluation
 - Configurable collection targets and filters
+- **Interactive web dashboard** for visualizing collected data
 
 ## Installation
 
@@ -80,7 +81,26 @@ python extract_consensus.py --export my_dataset.jsonl
 python extract_consensus.py --subreddit whatisthisthing
 ```
 
-### 3. View Statistics
+### 3. View Data in Web Dashboard
+
+Launch the interactive web dashboard:
+
+```bash
+# Activate virtual environment and launch Streamlit app
+./run_webapp.sh
+
+# Or manually:
+source /path/to/venv/bin/activate
+streamlit run web_app.py
+```
+
+The dashboard will open in your browser at `http://localhost:8501` and provides:
+- **Dashboard**: Overview statistics and charts
+- **Browse Posts**: View posts with images, consensus answers, and confidence scores
+- **Consensus Analysis**: Analyze confidence distributions and compare subreddits
+- **Dataset Export**: Export filtered datasets directly from the web interface
+
+### 4. View Statistics (CLI)
 
 Check collection statistics directly from the database:
 

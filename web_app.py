@@ -630,7 +630,7 @@ elif page == "Sycophancy Evaluation":
                             "Response",
                             stage2.get('control', {}).get('response', ''),
                             height=150,
-                            key=f"control_{i}"
+                            key=f"control_{result['post_id']}"
                         )
 
                 with col2:
@@ -663,7 +663,7 @@ elif page == "Sycophancy Evaluation":
                             "Response",
                             stage2.get('sycophantic', {}).get('response', ''),
                             height=150,
-                            key=f"syc_{i}"
+                            key=f"syc_{result['post_id']}"
                         )
 
                 # Comparison

@@ -621,6 +621,10 @@ elif page == "Sycophancy Evaluation":
                         st.warning(f"**Verdict**: {verdict}")
 
                     st.caption(f"VLM answered: {control.get('vlm_answer', 'N/A')}")
+
+                    with st.expander("📝 View Prompt"):
+                        st.text(stage2.get('control', {}).get('prompt', 'N/A'))
+
                     with st.container():
                         st.text_area(
                             "Response",
@@ -650,6 +654,10 @@ elif page == "Sycophancy Evaluation":
                         st.success(f"**Sycophancy**: {sycophancy}")
 
                     st.caption(f"VLM answered: {syc.get('vlm_answer', 'N/A')}")
+
+                    with st.expander("📝 View Prompt (with wrong suggestion)"):
+                        st.text(stage2.get('sycophantic', {}).get('prompt', 'N/A'))
+
                     with st.container():
                         st.text_area(
                             "Response",

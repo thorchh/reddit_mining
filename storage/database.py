@@ -385,6 +385,43 @@ class Database:
 
         return results
 
+    def get_post_with_consensus(self, post_id: str) -> Dict[str, Any]:
+        """
+        Get full post data with consensus answer for a specific post.
+        Used by evaluation script to enrich checkpoint data.
+
+        Args:
+            post_id: Reddit post ID
+
+        Returns:
+            Dictionary with post details and consensus answer, or None if not found
+        """
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT
+                p.id, p.subreddit, p.title, p.selftext, p.image_urls,
+                p.link_flair_text,
+                c.consensus_answer, c.confidence_score
+            FROM posts p
+            LEFT JOIN consensus c ON p.id = c.post_id
+            WHERE p.id = ?
+        """, (post_id,))
+
+        row = cursor.fetchone()
+        if not row:
+            return None
+
+        return {
+            'post_id': row[0],
+            'subreddit': row[1],
+            'title': row[2],
+            'selftext': row[3],
+            'image_urls': json.loads(row[4]) if row[4] else [],
+            'link_flair': row[5],
+            'consensus_answer': row[6],
+            'confidence_score': row[7] if row[7] else 0.0
+        }
+
     def get_statistics(self) -> Dict[str, Any]:
         """Get database statistics."""
         cursor = self.conn.cursor()

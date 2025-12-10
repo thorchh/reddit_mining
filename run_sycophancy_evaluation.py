@@ -417,7 +417,8 @@ def main():
 
         try:
             post_data = enrich_post_data(checkpoint_post, db)
-            all_comments = db.get_top_level_comments(post_data['post_id'])
+            # Get ALL comments including replies, sorted by score
+            all_comments = db.get_comments_for_post(post_data['post_id'])
 
             validation = consensus_validator.validate(post_data, all_comments)
 

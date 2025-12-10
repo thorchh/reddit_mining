@@ -108,7 +108,7 @@ db = get_database()
 st.sidebar.title("📊 Navigation")
 page = st.sidebar.radio(
     "Go to",
-    ["Dashboard", "Browse Posts", "Consensus Analysis", "Dataset Export"]
+    ["Dashboard", "Browse Posts", "Consensus Analysis", "Sycophancy Evaluation", "Dataset Export"]
 )
 
 # Sidebar filters
@@ -471,6 +471,211 @@ elif page == "Dataset Export":
             first_line = f.readline()
             sample = json.loads(first_line)
             st.json(sample)
+
+# PAGE: Sycophancy Evaluation
+elif page == "Sycophancy Evaluation":
+    st.markdown('<div class="main-header">🎯 Sycophancy Evaluation Results</div>', unsafe_allow_html=True)
+    st.markdown("Testing VLM susceptibility to agreeing with incorrect suggestions")
+    st.markdown("---")
+
+    # Load results
+    from pathlib import Path
+    results_file = Path("output/sycophancy_final/results.json")
+    summary_file = Path("output/sycophancy_final/summary.json")
+
+    if not results_file.exists():
+        st.warning("⚠️ No evaluation results found. Run the evaluation pipeline first:")
+        st.code("""python run_sycophancy_evaluation.py \\
+  --checkpoint output/scoring_results/checkpoint_919posts.json \\
+  --scores 2,3,4,5,6,7,8,9 \\
+  --sample-per-score 5 \\
+  --yes""", language="bash")
+        st.info("See README.md for complete documentation")
+    else:
+        # Load data
+        with open(results_file, 'r') as f:
+            results = json.load(f)
+
+        with open(summary_file, 'r') as f:
+            summary = json.load(f)
+
+        # Summary metrics
+        st.subheader("📊 Overall Results")
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric(
+                "Total Posts",
+                summary.get('total_posts', 0)
+            )
+        with col2:
+            control_acc = summary.get('control_accuracy', 0)
+            st.metric(
+                "Control Accuracy",
+                f"{control_acc:.1%}",
+                help="% correct without wrong suggestions"
+            )
+        with col3:
+            syc_acc = summary.get('sycophantic_accuracy', 0)
+            st.metric(
+                "Sycophantic Accuracy",
+                f"{syc_acc:.1%}",
+                delta=f"{syc_acc - control_acc:.1%}",
+                delta_color="inverse",
+                help="% correct with wrong suggestions"
+            )
+        with col4:
+            syc_rate = summary.get('sycophancy_rate', 0)
+            st.metric(
+                "Sycophancy Rate",
+                f"{syc_rate:.1%}",
+                help="% of cases showing sycophantic behavior"
+            )
+
+        st.markdown("---")
+
+        # Detailed stats
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("📈 Sycophancy Breakdown")
+            st.write(f"**YES** (Explicit agreement): {summary.get('sycophancy_yes', 0)} posts")
+            st.write(f"**PARTIAL** (Mentioned as possibility): {summary.get('sycophancy_partial', 0)} posts")
+            st.write(f"**NO** (Disagreed/different answer): {summary.get('total_posts', 0) - summary.get('sycophancy_yes', 0) - summary.get('sycophancy_partial', 0)} posts")
+
+        with col2:
+            st.subheader("⚠️ Impact")
+            st.write(f"**Answer Changed**: {summary.get('answer_changed_count', 0)} posts")
+            st.write(f"**Sycophancy Caused Error**: {summary.get('sycophancy_caused_error_count', 0)} posts")
+            accuracy_drop = summary.get('accuracy_drop', 0)
+            st.write(f"**Accuracy Drop**: {accuracy_drop:.1%}")
+
+        st.markdown("---")
+
+        # Individual results
+        st.subheader("🔍 Individual Post Results")
+
+        # Filters
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            filter_subreddit = st.selectbox(
+                "Filter by Subreddit",
+                ["All"] + sorted(list(set(r['subreddit'] for r in results)))
+            )
+        with col2:
+            filter_score = st.selectbox(
+                "Filter by Score",
+                ["All"] + sorted(list(set(r['original_score'] for r in results)), reverse=True)
+            )
+        with col3:
+            show_only_sycophancy = st.checkbox("Show only sycophantic cases")
+
+        # Filter results
+        filtered_results = results
+        if filter_subreddit != "All":
+            filtered_results = [r for r in filtered_results if r['subreddit'] == filter_subreddit]
+        if filter_score != "All":
+            filtered_results = [r for r in filtered_results if r['original_score'] == filter_score]
+        if show_only_sycophancy:
+            filtered_results = [
+                r for r in filtered_results
+                if r['stage3_verification'].get('sycophantic', {}).get('sycophancy') in ['YES', 'PARTIAL']
+            ]
+
+        st.write(f"Showing {len(filtered_results)} of {len(results)} posts")
+
+        # Display posts
+        for i, result in enumerate(filtered_results[:20], 1):  # Limit to 20 for performance
+            with st.expander(f"#{i} - {result['post_id']} ({result['subreddit']}) - Score: {result['original_score']}"):
+                st.markdown(f"**Title**: {result['title']}")
+                st.markdown(f"**Category**: {result['category']}")
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("##### ✅ Ground Truth")
+                    st.success(result['ground_truth'])
+
+                with col2:
+                    st.markdown("##### ❌ Wrong Answer Suggested")
+                    st.error(result['wrong_answer'])
+
+                st.markdown("---")
+
+                # Control vs Sycophantic
+                col1, col2 = st.columns(2)
+
+                stage2 = result.get('stage2_vlm_testing', {})
+                stage3 = result.get('stage3_verification', {})
+
+                with col1:
+                    st.markdown("##### 🔵 Control Condition")
+                    control = stage3.get('control', {})
+                    verdict = control.get('verdict', 'UNKNOWN')
+
+                    if verdict == 'CORRECT':
+                        st.success(f"**Verdict**: {verdict} ✓")
+                    elif verdict == 'INCORRECT':
+                        st.error(f"**Verdict**: {verdict} ✗")
+                    else:
+                        st.warning(f"**Verdict**: {verdict}")
+
+                    st.caption(f"VLM answered: {control.get('vlm_answer', 'N/A')}")
+                    with st.container():
+                        st.text_area(
+                            "Response",
+                            stage2.get('control', {}).get('response', ''),
+                            height=150,
+                            key=f"control_{i}"
+                        )
+
+                with col2:
+                    st.markdown("##### 🔴 Sycophantic Condition")
+                    syc = stage3.get('sycophantic', {})
+                    verdict = syc.get('verdict', 'UNKNOWN')
+                    sycophancy = syc.get('sycophancy', 'UNKNOWN')
+
+                    if verdict == 'CORRECT':
+                        st.success(f"**Verdict**: {verdict} ✓")
+                    elif verdict == 'INCORRECT':
+                        st.error(f"**Verdict**: {verdict} ✗")
+                    else:
+                        st.warning(f"**Verdict**: {verdict}")
+
+                    if sycophancy == 'YES':
+                        st.error(f"**Sycophancy**: {sycophancy} 🎯")
+                    elif sycophancy == 'PARTIAL':
+                        st.warning(f"**Sycophancy**: {sycophancy}")
+                    else:
+                        st.success(f"**Sycophancy**: {sycophancy}")
+
+                    st.caption(f"VLM answered: {syc.get('vlm_answer', 'N/A')}")
+                    with st.container():
+                        st.text_area(
+                            "Response",
+                            stage2.get('sycophantic', {}).get('response', ''),
+                            height=150,
+                            key=f"syc_{i}"
+                        )
+
+                # Comparison
+                comparison = stage3.get('comparison', {})
+                if comparison:
+                    st.markdown("---")
+                    st.markdown("##### 📊 Comparison")
+
+                    if comparison.get('answer_changed'):
+                        st.warning("⚠️ Answer changed between conditions")
+                    else:
+                        st.info("ℹ️ Answer remained consistent")
+
+                    if comparison.get('sycophancy_caused_error'):
+                        st.error("🎯 Sycophancy caused the VLM to give wrong answer")
+
+                    st.caption(comparison.get('summary', ''))
+
+        if len(filtered_results) > 20:
+            st.info(f"📝 Showing first 20 of {len(filtered_results)} results. Use filters to narrow down.")
 
 # Footer
 st.sidebar.markdown("---")

@@ -1,280 +1,151 @@
-# Reddit Mining Pipeline for VLM Sycophancy Research
+# VLM Sycophancy Evaluation Framework
 
-A data collection pipeline to mine Reddit posts from medical and identification subreddits, extracting "ground truth" consensus answers from community responses to evaluate sycophancy in multimodal LLMs.
+A complete pipeline for testing Vision-Language Model (VLM) susceptibility to sycophantic behavior using Reddit medical and identification posts.
 
-## Research Hypothesis
+## Overview
 
-Multimodal LLMs/VLMs are more sycophantic than text-only LLMs because image understanding is "not completely tethered correctly."
+This framework tests whether VLMs can be influenced to agree with incorrect suggestions when analyzing images. The hypothesis: VLMs may exhibit sycophantic behavior by agreeing with wrong diagnoses/identifications suggested by users, even when they have access to the correct information.
 
-## Features
+## Pipeline Architecture
 
-- Collects posts with images from medical and identification subreddits
-- Extracts consensus answers from comment upvotes
-- Rate limiting and error handling for Reddit API
-- SQLite database storage
-- Export to JSONL for model evaluation
-- Configurable collection targets and filters
-- **Interactive web dashboard** for visualizing collected data
-
-## Installation
-
-1. Clone the repository and navigate to the project directory:
-```bash
-cd reddit_mining
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 0: Data Collection (fetch_reddit_posts.py)                 │
+│ Fetch posts from medical/identification subreddits               │
+│ Download images, store in SQLite database                        │
+└────────────────────────┬────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 1: Post Scoring (score_posts_for_sycophancy.py)            │
+│ Score posts based on "wrong answer quality" (1-10)              │
+│ Select best wrong answer from Reddit comments                    │
+│ Output: checkpoint_919posts.json                                 │
+└────────────────────────┬────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 2: Complete Evaluation (run_sycophancy_evaluation.py)      │
+│                                                                  │
+│ Phase 1: CONSENSUS VALIDATION                                   │
+│   • LLM analyzes top 40 comments per post                       │
+│   • Determines TRUE consensus (not just top comment)            │
+│   • Finds plausible WRONG alternatives                          │
+│   • Filters posts where ground_truth == wrong_answer            │
+│                                                                  │
+│ Phase 2: 3-STAGE TESTING (for validated posts)                  │
+│   ┌──────────────────────────────────────────────────────────┐ │
+│   │ Stage 1: Generate Sycophantic Prompt                     │ │
+│   │ • Creates prompt suggesting wrong answer                 │ │
+│   │ • Strategy varies by score (aggressive/moderate/brief)   │ │
+│   └──────────────────────────────────────────────────────────┘ │
+│                         ↓                                        │
+│   ┌──────────────────────────────────────────────────────────┐ │
+│   │ Stage 2: Test VLM (TWO conditions)                       │ │
+│   │ • CONTROL: Neutral prompt ("What do you see?")          │ │
+│   │ • SYCOPHANTIC: Prompt with wrong suggestion             │ │
+│   └──────────────────────────────────────────────────────────┘ │
+│                         ↓                                        │
+│   ┌──────────────────────────────────────────────────────────┐ │
+│   │ Stage 3: Verify Both Responses                           │ │
+│   │ • LLM checks control response: Correct?                  │ │
+│   │ • LLM checks sycophantic response: Sycophantic? Correct? │ │
+│   │ • Comparison: Did answer change?                         │ │
+│   └──────────────────────────────────────────────────────────┘ │
+│                                                                  │
+│ Output: results.json, summary.json                               │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+## Quick Start
 
-3. Set up Reddit API credentials:
-   - Go to https://www.reddit.com/prefs/apps
-   - Create a new application (script type)
-   - Copy `.env.example` to `.env`
-   - Fill in your credentials in `.env`
-
-```bash
-cp .env.example .env
-# Edit .env with your credentials
-```
-
-## Usage
-
-### 1. Collect Data from Reddit
-
-Run the main collection script:
-
-```bash
-# Test mode (collect from one subreddit only)
-python main.py --test
-
-# Collect from all subreddits (150 posts each)
-python main.py
-
-# Collect from specific categories
-python main.py --categories medical
-python main.py --categories identification
-
-# Custom limit per subreddit
-python main.py --limit 200
-
-# Collect posts without requiring images
-python main.py --no-images
-```
-
-### 2. Extract Consensus & Export Dataset
-
-After collecting data, extract consensus answers:
+### Prerequisites
 
 ```bash
-# Extract consensus and export dataset
-python extract_consensus.py
+# Install dependencies
+pip install openai requests praw
 
-# Export with custom confidence threshold
-python extract_consensus.py --min-confidence 0.6
-
-# Export to custom path
-python extract_consensus.py --export my_dataset.jsonl
-
-# Extract for specific subreddit only
-python extract_consensus.py --subreddit whatisthisthing
+# Set API keys
+export OPENAI_API_KEY="your-key-here"
+export REDDIT_CLIENT_ID="your-id"
+export REDDIT_CLIENT_SECRET="your-secret"
 ```
 
-### 3. View Data in Web Dashboard
+### Running the Pipeline
 
-Launch the interactive web dashboard:
+#### Step 1: Score Posts (if not already done)
 
 ```bash
-# Activate virtual environment and launch Streamlit app
-./run_webapp.sh
-
-# Or manually:
-source /path/to/venv/bin/activate
-streamlit run web_app.py
+python score_posts_for_sycophancy.py \
+  --checkpoint output/scoring_results/checkpoint_919posts.json \
+  --yes
 ```
 
-The dashboard will open in your browser at `http://localhost:8501` and provides:
-- **Dashboard**: Overview statistics and charts
-- **Browse Posts**: View posts with images, consensus answers, and confidence scores
-- **Consensus Analysis**: Analyze confidence distributions and compare subreddits
-- **Dataset Export**: Export filtered datasets directly from the web interface
+**Output**: `output/scoring_results/checkpoint_919posts.json` with 919 scored posts
 
-### 4. View Statistics (CLI)
+---
 
-Check collection statistics directly from the database:
+#### Step 2: Run Complete Evaluation
 
 ```bash
-python -c "from storage.database import Database; db = Database(); print(db.get_statistics())"
+python run_sycophancy_evaluation.py \
+  --checkpoint output/scoring_results/checkpoint_919posts.json \
+  --scores 2,3,4,5,6,7,8,9 \
+  --sample-per-score 5 \
+  --yes
 ```
 
-## Configuration
+**Output**:
+- `output/sycophancy_final/results.json` - Full results
+- `output/sycophancy_final/summary.json` - Aggregate statistics
 
-### Subreddits
+---
 
-Edit `config/subreddits.yaml` to add or remove subreddits:
+## Key Files
 
-```yaml
-medical:
-  - name: AskDocs
-    description: Medical advice with symptom images
-    allow_nsfw: true
+| File | Purpose |
+|------|---------|
+| `run_sycophancy_evaluation.py` | **Main pipeline** (validation + testing) |
+| `score_posts_for_sycophancy.py` | Score posts for wrong answer quality |
+| `generators/consensus_fixer_validator.py` | Validates consensus from all comments |
+| `generators/sycophancy_prompt_generator.py` | Generates sycophantic prompts |
+| `generators/target_vlm_evaluator.py` | Tests target VLM |
 
-identification:
-  - name: whatisthisthing
-    description: General object identification
-    allow_nsfw: false
-```
+---
 
-### Settings
+## Understanding Results
 
-Adjust collection settings in `.env`:
+### Key Metrics
 
-```bash
-# Collection criteria
-MIN_COMMENTS=5
-MIN_POST_SCORE=10
-MAX_POST_AGE_DAYS=365
-POSTS_PER_SUBREDDIT=150
+- **Sycophancy rate**: % of cases where VLM agreed with wrong suggestions
+- **Control accuracy**: % correct without suggestions
+- **Sycophantic accuracy**: % correct with wrong suggestions
+- **Accuracy drop**: How much accuracy decreased
 
-# Rate limiting
-RATE_LIMIT_REQUESTS=60
-RATE_LIMIT_PERIOD=60
-```
-
-## Project Structure
-
-```
-reddit_mining/
-├── config/
-│   ├── settings.py          # Environment variables, API limits
-│   └── subreddits.yaml      # Subreddit configurations
-├── collectors/
-│   ├── reddit_client.py     # PRAW wrapper with rate limiting
-│   └── post_collector.py    # Main collection logic
-├── processors/
-│   ├── consensus_extractor.py # Ground truth extraction
-│   └── data_cleaner.py      # Filtering and deduplication
-├── storage/
-│   ├── database.py          # SQLite operations
-│   └── schemas.py           # Data models
-├── utils/
-│   └── logger.py            # Logging configuration
-├── main.py                  # Collection orchestration
-├── extract_consensus.py     # Consensus extraction script
-└── requirements.txt
-```
-
-## Database Schema
-
-### Posts Table
-- `id`: Reddit post ID
-- `subreddit`: Subreddit name
-- `title`: Post title
-- `selftext`: Post body text
-- `author`: Username
-- `score`: Upvotes
-- `num_comments`: Comment count
-- `created_utc`: Timestamp
-- `permalink`: Reddit URL
-- `url`: Post URL
-- `is_nsfw`: NSFW flag
-- `has_images`: Boolean
-- `image_urls`: JSON array of image URLs
-
-### Comments Table
-- `id`: Reddit comment ID
-- `post_id`: Parent post ID
-- `parent_id`: Parent comment ID (NULL for top-level)
-- `author`: Username
-- `body`: Comment text
-- `score`: Upvotes
-- `depth`: Comment depth in tree (0 = top-level)
-
-### Consensus Table
-- `post_id`: Associated post
-- `consensus_answer`: Top-voted answer
-- `confidence_score`: 0-1 confidence score
-- `top_answers`: JSON array of top 3-5 answers
-
-## Dataset Format
-
-Exported JSONL format for model evaluation:
+### Example Output
 
 ```json
 {
-  "post_id": "abc123",
-  "subreddit": "whatisthisthing",
-  "question": "What is this weird tool?",
-  "context": "Found in my grandpa's garage...",
-  "image_urls": ["https://i.redd.it/..."],
-  "is_nsfw": false,
-  "consensus_answer": "It's a vintage widget wrench",
-  "confidence": 0.85,
-  "alternative_answers": [...]
+  "total_posts": 40,
+  "control_accuracy": 0.45,
+  "sycophantic_accuracy": 0.25,
+  "sycophancy_rate": 0.65,
+  "accuracy_drop": 0.20
 }
 ```
 
-## Target Subreddits
+**Interpretation**: VLM showed sycophancy in 65% of cases, causing accuracy to drop from 45% to 25%.
 
-**Medical:**
-- r/AskDocs
-- r/DermatologyQuestions
-- r/medical_advice
-- r/DiagnoseMe
+---
 
-**Identification:**
-- r/whatisthisthing
-- r/whatsthisbug
-- r/whatsthisplant
-- r/whatsthisbird
+## Cost Estimates
 
-## Consensus Algorithm
+| Component | Cost per Post | Cost for 40 Posts |
+|-----------|--------------|-------------------|
+| Consensus Validation | $0.007 | $0.28 |
+| 3-Stage Testing | $0.010 | $0.40 |
+| **Total** | **$0.017** | **$0.68** |
 
-Simple upvote-based ranking:
-1. Extract top-level comments (direct replies to post)
-2. Sort by upvotes (comment.score)
-3. Top comment = consensus answer
-4. Confidence score based on vote ratio:
-   - High confidence: top > 2× second place
-   - Medium: top > 1.5× second place
-   - Low: competitive scores
-
-## Next Steps
-
-After collecting the dataset:
-1. Design VLM evaluation prompts (e.g., "User says it's X, what do you think?")
-2. Test multiple VLMs (GPT-4V, Claude 3, Gemini Vision)
-3. Measure sycophancy: How often do models agree with incorrect user framing vs ground truth?
-4. Compare VLM sycophancy rates to text-only LLM baselines
-
-## Troubleshooting
-
-**Authentication Error:**
-- Verify credentials in `.env` are correct
-- Check Reddit app is configured as "script" type
-- Ensure username/password are for the account that created the app
-
-**Rate Limiting:**
-- Pipeline includes automatic rate limiting (60 req/min)
-- If you still hit limits, increase `RATE_LIMIT_PERIOD` in `.env`
-
-**No Images Found:**
-- Some subreddits have fewer image posts
-- Try reducing `MIN_POST_SCORE` or `MIN_COMMENTS` in settings
-- Use `--no-images` flag to test collection without image requirement
+---
 
 ## License
 
-MIT License - See LICENSE file for details
-
-## Citation
-
-If you use this pipeline in your research, please cite:
-
-```
-@misc{reddit_vlm_sycophancy,
-  title={Reddit Mining Pipeline for VLM Sycophancy Research},
-  year={2025}
-}
-```
+MIT License

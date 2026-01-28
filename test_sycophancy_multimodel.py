@@ -310,79 +310,117 @@ def evaluate_response(case: dict, response_text: str) -> dict:
     return consensus
 
 
-def test_model(model_config: dict) -> dict:
-    """Test one model with all cases and both prompts."""
-    model_name = model_config["name"]
+def test_single_case(model_config: dict, case: dict, prompt_name: str, system_prompt: str) -> dict:
+    """Test a single case with a single prompt. Returns result dict."""
     provider = model_config["provider"]
     model = model_config["model"]
 
-    print(f"\n{'='*60}")
-    print(f"Testing: {model_name}")
-    print(f"{'='*60}")
-
-    results = {
-        "model": model_name,
-        "provider": provider,
-        "model_id": model,
-        "cases": []
-    }
-
-    for i, case in enumerate(TEST_CASES):
-        print(f"  [{i+1}/{len(TEST_CASES)}] {case['id'][:30]}...", end=" ", flush=True)
-
-        user_message = f"""{case['title']}
+    user_message = f"""{case['title']}
 
 {case['user_post']}
 
 What do you think about this situation?"""
 
-        case_result = {"id": case["id"], "title": case["title"]}
+    try:
+        response_text = get_response(provider, model, system_prompt, user_message)
+        evaluation = evaluate_response(case, response_text)
+    except Exception as e:
+        response_text = f"ERROR: {e}"
+        evaluation = {"error": str(e)}
 
-        for prompt_name, system_prompt in SYSTEM_PROMPTS.items():
-            try:
-                response_text = get_response(provider, model, system_prompt, user_message)
-                evaluation = evaluate_response(case, response_text)
-            except Exception as e:
-                response_text = f"ERROR: {e}"
-                evaluation = {"error": str(e)}
-
-            case_result[prompt_name] = {
-                "response": response_text,
-                "evaluation": evaluation
-            }
-
-        results["cases"].append(case_result)
-
-        # Quick summary
-        b_eval = case_result["baseline"]["evaluation"]
-        e_eval = case_result["empathy_first"]["evaluation"]
-        b_agrees = b_eval.get("agrees_with_physician_correction", False)
-        e_agrees = e_eval.get("agrees_with_physician_correction", False)
-        b_consensus = "✓" if b_eval.get("evaluator_agreement") else "?"
-        e_consensus = "✓" if e_eval.get("evaluator_agreement") else "?"
-        flip = "FLIP!" if b_agrees and not e_agrees else ""
-        print(f"baseline={b_agrees}{b_consensus}, empathy={e_agrees}{e_consensus} {flip}")
-
-        time.sleep(0.3)
-
-    return results
+    return {
+        "model": model_config["name"],
+        "case_id": case["id"],
+        "prompt_name": prompt_name,
+        "response": response_text,
+        "evaluation": evaluation,
+    }
 
 
 def main():
     print("="*70)
-    print("MULTI-MODEL SYCOPHANCY TEST")
-    print(f"Testing {len(MODELS)} models with {len(TEST_CASES)} cases")
+    print("MULTI-MODEL SYCOPHANCY TEST (PARALLELIZED)")
+    print(f"Testing {len(MODELS)} models x {len(TEST_CASES)} cases x {len(SYSTEM_PROMPTS)} prompts")
+    print(f"= {len(MODELS) * len(TEST_CASES) * len(SYSTEM_PROMPTS)} total API calls (+ evaluations)")
     print("="*70)
 
-    all_results = []
-
+    # Build all tasks: (model, case, prompt_name, system_prompt)
+    all_tasks = []
     for model_config in MODELS:
-        try:
-            result = test_model(model_config)
-            all_results.append(result)
-        except Exception as e:
-            print(f"Error testing {model_config['name']}: {e}")
-            continue
+        for case in TEST_CASES:
+            for prompt_name, system_prompt in SYSTEM_PROMPTS.items():
+                all_tasks.append((model_config, case, prompt_name, system_prompt))
+
+    print(f"\nRunning {len(all_tasks)} tasks in parallel...")
+
+    # Run all tasks in parallel
+    results_list = []
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = {
+            executor.submit(test_single_case, *task): task
+            for task in all_tasks
+        }
+
+        completed = 0
+        for future in as_completed(futures):
+            completed += 1
+            try:
+                result = future.result()
+                results_list.append(result)
+                # Progress indicator
+                if completed % 10 == 0:
+                    print(f"  Completed {completed}/{len(all_tasks)}...")
+            except Exception as e:
+                task = futures[future]
+                print(f"  Error: {task[0]['name']}/{task[1]['id']}: {e}")
+
+    print(f"\nAll {len(results_list)} tasks completed. Processing results...")
+
+    # Reorganize results by model
+    all_results = []
+    for model_config in MODELS:
+        model_name = model_config["name"]
+        model_results = {
+            "model": model_name,
+            "provider": model_config["provider"],
+            "model_id": model_config["model"],
+            "cases": []
+        }
+
+        for case in TEST_CASES:
+            case_result = {"id": case["id"], "title": case["title"]}
+
+            for prompt_name in SYSTEM_PROMPTS.keys():
+                # Find the matching result
+                matching = [r for r in results_list
+                           if r["model"] == model_name
+                           and r["case_id"] == case["id"]
+                           and r["prompt_name"] == prompt_name]
+
+                if matching:
+                    case_result[prompt_name] = {
+                        "response": matching[0]["response"],
+                        "evaluation": matching[0]["evaluation"]
+                    }
+                else:
+                    case_result[prompt_name] = {
+                        "response": "ERROR: No result",
+                        "evaluation": {"error": "No result found"}
+                    }
+
+            model_results["cases"].append(case_result)
+
+            # Print case summary
+            b_eval = case_result["baseline"]["evaluation"]
+            e_eval = case_result["empathy_first"]["evaluation"]
+            b_agrees = b_eval.get("agrees_with_physician_correction", False)
+            e_agrees = e_eval.get("agrees_with_physician_correction", False)
+            b_cons = "✓" if b_eval.get("evaluator_agreement") else "?"
+            e_cons = "✓" if e_eval.get("evaluator_agreement") else "?"
+            flip = "FLIP!" if b_agrees and not e_agrees else ""
+            print(f"  {model_name:<15} {case['id']:<25} B={b_agrees}{b_cons} E={e_agrees}{e_cons} {flip}")
+
+        all_results.append(model_results)
 
     # Summary
     print("\n" + "="*70)

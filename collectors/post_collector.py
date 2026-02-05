@@ -310,7 +310,8 @@ class PostCollector:
             'score': comment.score,
             'created_utc': int(comment.created_utc),
             'permalink': comment.permalink,
-            'depth': depth
+            'depth': depth,
+            'author_flair_text': comment.author_flair_text if hasattr(comment, 'author_flair_text') else None,
         }
 
     def _calculate_comment_depth(self, comment) -> int:

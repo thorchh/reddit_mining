@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS comments (
     permalink TEXT,
     depth INTEGER,
     collected_at INTEGER,
+    author_flair_text TEXT,
     FOREIGN KEY (post_id) REFERENCES posts(id)
 );
 """

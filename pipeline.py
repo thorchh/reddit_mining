@@ -63,7 +63,7 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # ──────────────────────────────────────────────
 
 def get_physician_posts():
-    """Pull all physician-responded posts with their top non-AutoMod comment."""
+    """Pull all physician-responded posts with the actual physician's comment (by flair)."""
     db = Database()
     posts = list(db.get_posts_by_subreddit("AskDocs"))
 
@@ -77,10 +77,12 @@ def get_physician_posts():
             continue
 
         comments = db.get_comments_for_post(post["id"])
-        # Find top physician comment (non-AutoMod, non-trivial)
+
+        # Find highest-scored comment from a verified physician (by flair)
         physician_comment = None
         for c in sorted(comments, key=lambda x: x["score"], reverse=True):
-            if c.get("author") != "AutoModerator" and len(c.get("body", "")) > 100:
+            flair = c.get("author_flair_text") or ""
+            if "Physician" in flair and len(c.get("body", "")) > 100:
                 physician_comment = c["body"]
                 break
 

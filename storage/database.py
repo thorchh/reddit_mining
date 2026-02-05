@@ -44,6 +44,12 @@ class Database:
         for index_sql in CREATE_INDEXES:
             cursor.execute(index_sql)
 
+        # Migrations for existing databases
+        try:
+            cursor.execute("ALTER TABLE comments ADD COLUMN author_flair_text TEXT")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+
         self.conn.commit()
         logger.info("Database schema ready")
 
@@ -111,8 +117,8 @@ class Database:
         cursor.execute("""
             INSERT INTO comments (
                 id, post_id, parent_id, author, body, score,
-                created_utc, permalink, depth, collected_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                created_utc, permalink, depth, collected_at, author_flair_text
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             comment_data['id'],
             comment_data['post_id'],
@@ -123,7 +129,8 @@ class Database:
             comment_data['created_utc'],
             comment_data['permalink'],
             comment_data.get('depth', 0),
-            int(datetime.now().timestamp())
+            int(datetime.now().timestamp()),
+            comment_data.get('author_flair_text'),
         ))
         self.conn.commit()
         logger.debug(f"Inserted comment {comment_data['id']}")

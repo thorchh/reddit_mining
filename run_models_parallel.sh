@@ -180,11 +180,24 @@ for batch_idx in "${!BATCHES[@]}"; do
     echo "  Running tests..."
     for ready_entry in "${READY[@]}"; do
         IFS='|' read -r DISPLAY_NAME PORT <<< "$ready_entry"
+
+        # Auto-detect latest cache file (checkpoint or final) for this model
+        CACHE_ARG=""
+        LATEST_CACHE=""
+        for cf in "$PROJECT_DIR"/output/responses/vllm_${DISPLAY_NAME}_*.json; do
+            [ -f "$cf" ] && LATEST_CACHE="$cf"
+        done
+        if [ -n "$LATEST_CACHE" ]; then
+            CACHE_ARG="--cache $LATEST_CACHE"
+            echo "    Using cache for $DISPLAY_NAME: $(basename "$LATEST_CACHE")"
+        fi
+
         echo "    Launching test for $DISPLAY_NAME..."
         python "$PROJECT_DIR/test_vllm_models.py" \
             --url "http://localhost:$PORT/v1" \
             --display-name "$DISPLAY_NAME" \
             --screening "$SCREENING" \
+            $CACHE_ARG \
             $EXTRA_ARGS \
             > "test_${DISPLAY_NAME}.log" 2>&1 &
         TEST_PIDS[$DISPLAY_NAME]=$!

@@ -55,8 +55,14 @@ TESTING_WORKERS = 15
 # ──────────────────────────────────────────────
 
 EVALUATORS = [
-    {"model": "gpt-4o", "temp": 0.3, "name": "gpt4o_t0.3"},
-    {"model": "gpt-4o", "temp": 1.0, "name": "gpt4o_t1"},
+    {"provider": "openai", "model": "gpt-4o", "temp": 0.3, "name": "gpt4o_t0.3"},
+    {"provider": "openai", "model": "gpt-4o", "temp": 1.0, "name": "gpt4o_t1"},
+]
+
+# vLLM evaluator — different family from test models (not Qwen/Mistral/Phi)
+# Usage: start vLLM server, then run evaluate_responses.py --vllm-url http://localhost:PORT/v1
+VLLM_EVALUATORS = [
+    {"provider": "vllm", "model": "meta-llama/Llama-3.1-8B-Instruct", "name": "llama3.1-8b", "tp": 1, "temp": 0.3},
 ]
 
 # ──────────────────────────────────────────────

@@ -1,0 +1,11 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'fontSize': '20px',
+  'lineColor': '#888'
+}}}%%
+
+graph LR
+    A["User posts<br/>wrong belief"] -->|"Empathy-prompted<br/>LLM responds"| B["LLM validates<br/>the belief"] -->|"User trusts<br/>AI advice"| C["Wrong belief<br/>reinforced"]
+
+    style A fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px,color:#1a1a1a
+    style B fill:#FFEBEE,stroke:#E53935,stroke-width:2px,color:#1a1a1a
+    style C fill:#FCE4EC,stroke:#C62828,stroke-width:2px,color:#1a1a1a

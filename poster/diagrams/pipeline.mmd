@@ -1,0 +1,19 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'fontSize': '16px',
+  'lineColor': '#888'
+}}}%%
+
+graph TB
+    A["<b>Data Collection</b><br/>r/AskDocs physician corrections"] --> B["<b>Screening</b><br/>5,241 cases with clear misconceptions"]
+    B --> C["<b>Model Testing</b><br/>5 LLMs × 2 prompts"]
+    C --> D["<b>Evaluation</b><br/>LLM judges score sycophancy"]
+
+    PHY["Physician comment"]
+    PHY -.->|"withheld"| C
+    PHY -->|"ground truth"| D
+
+    style A fill:#E8F5E9,stroke:#43A047,stroke-width:2px
+    style B fill:#FFF8E1,stroke:#F9A825,stroke-width:2px
+    style C fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px
+    style D fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px
+    style PHY fill:#FFCDD2,stroke:#E53935,stroke-width:2px

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #fff; padding: 5px; max-width: 360px; font-size: 10px; color: #333; }
+
+  :root { --usc-red: #990000; }
+
+  .box { border: 2px dashed var(--usc-red); border-radius: 8px; padding: 7px 6px 5px; }
+
+  .flow {
+    display: flex;
+    align-items: center;
+  }
+
+  .step {
+    flex: 1;
+    text-align: center;
+  }
+
+  .step-icon {
+    font-size: 28px;
+    line-height: 1.1;
+    margin-bottom: 3px;
+  }
+
+  .step-label {
+    font-size: 8.5px;
+    font-weight: 800;
+    color: #333;
+    line-height: 1.3;
+  }
+
+  .step-sub {
+    font-size: 8px;
+    color: #888;
+    font-style: italic;
+  }
+
+  .syc-tag {
+    display: inline-block;
+    margin-top: 3px;
+    background: #FDECEA;
+    border: 1px solid #e8a9a4;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 7.5px;
+    font-weight: 700;
+    color: var(--usc-red);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .arrow {
+    padding: 0 2px;
+    font-size: 16px;
+    color: var(--usc-red);
+    font-weight: 800;
+  }
+
+  .con-list {
+    margin-top: 4px;
+    display: inline-block;
+    text-align: left;
+  }
+
+  .con {
+    font-size: 9px;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  .con-x {
+    color: var(--usc-red);
+    font-weight: 800;
+    margin-right: 2px;
+  }
+
+  .footer {
+    margin-top: 7px;
+    padding-top: 5px;
+    border-top: 1px solid #eee;
+    font-size: 8px;
+    color: #888;
+    text-align: center;
+  }
+  .footer b { color: #555; }
+</style>
+</head>
+<body>
+<div class="box">
+
+  <div class="flow">
+
+    <div class="step">
+      <div class="step-icon">🤒💻</div>
+      <div class="step-label">Patient asks AI</div>
+      <div class="step-sub">for medical advice</div>
+    </div>
+
+    <div class="arrow">&#8594;</div>
+
+    <div class="step">
+      <div class="step-icon">🤖👍</div>
+      <div class="step-label">LLM agrees with<br>wrong belief</div>
+      <div class="syc-tag">sycophancy</div>
+    </div>
+
+    <div class="arrow">&#8594;</div>
+
+    <div class="step">
+      <div class="step-icon">&#9888;&#65039;</div>
+      <div class="step-label">Real-world harm</div>
+      <div class="con-list">
+        <div class="con"><span class="con-x">&#10007;</span> Delays treatment</div>
+        <div class="con"><span class="con-x">&#10007;</span> Reinforces beliefs</div>
+        <div class="con"><span class="con-x">&#10007;</span> False security</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <b>r/AskDocs</b>: physician-verified ground truth at scale
+  </div>
+
+</div>
+</body>
+</html>

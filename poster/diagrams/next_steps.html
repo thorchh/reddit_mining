@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #fff; padding: 5px; max-width: 460px; font-size: 9px; color: #333; }
+
+  :root { --red: #990000; }
+
+  .wrap { border: 2px dashed var(--red); border-radius: 8px; padding: 8px 10px; }
+  .title { font-size: 7.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--red); margin-bottom: 6px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+
+  .item { display: flex; gap: 7px; align-items: flex-start; }
+
+  .item-ico { font-size: 20px; flex-shrink: 0; line-height: 1; width: 24px; text-align: center; }
+
+  .item-body { flex: 1; }
+  .item-head { font-size: 9px; font-weight: 800; color: #333; margin-bottom: 1px; }
+  .item-desc { font-size: 8px; color: #666; line-height: 1.35; }
+  .item-desc b { color: #444; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">Next Steps</div>
+
+  <div class="grid">
+
+  <div class="item">
+    <span class="item-ico">✍️</span>
+    <div class="item-body">
+      <div class="item-head">Human annotation</div>
+      <div class="item-desc">Validate and <b>refine rubric</b> with multiple annotators to improve reliability</div>
+    </div>
+  </div>
+
+  <div class="item">
+    <span class="item-ico">📈</span>
+    <div class="item-body">
+      <div class="item-head">Scale to full dataset</div>
+      <div class="item-desc">Expand from pilot cases to <b>all 5,241 screened posts</b></div>
+    </div>
+  </div>
+
+  <div class="item">
+    <span class="item-ico">💬</span>
+    <div class="item-body">
+      <div class="item-head">More prompt types</div>
+      <div class="item-desc">Test <b>additional system prompts</b> beyond baseline and empathy-first</div>
+    </div>
+  </div>
+
+  <div class="item">
+    <span class="item-ico">🛡️</span>
+    <div class="item-body">
+      <div class="item-head">Mitigation strategies</div>
+      <div class="item-desc"><b>Contrastive fine-tuning</b>, prompt-level defenses, and sycophancy-aware RLHF</div>
+    </div>
+  </div>
+
+  <div class="item">
+    <span class="item-ico">🏢</span>
+    <div class="item-body">
+      <div class="item-head">Commercial models</div>
+      <div class="item-desc">Benchmark <b>GPT-4o, Claude, Gemini</b> against open-source results</div>
+    </div>
+  </div>
+
+  </div>
+</div>
+</body>
+</html>

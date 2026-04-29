@@ -5,10 +5,15 @@ Streamlit Web App for Reddit Mining Data Visualization
 Visualize collected Reddit posts, comments, and consensus answers.
 """
 
+import sys
 import streamlit as st
 import pandas as pd
 import json
+from pathlib import Path
 from datetime import datetime
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from storage.database import Database
 
 # Page configuration

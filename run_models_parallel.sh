@@ -193,7 +193,7 @@ for batch_idx in "${!BATCHES[@]}"; do
         fi
 
         echo "    Launching test for $DISPLAY_NAME..."
-        python "$PROJECT_DIR/test_vllm_models.py" \
+        python "$PROJECT_DIR/pipeline/test_vllm_models.py" \
             --url "http://localhost:$PORT/v1" \
             --display-name "$DISPLAY_NAME" \
             --screening "$SCREENING" \

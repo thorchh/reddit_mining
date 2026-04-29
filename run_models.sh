@@ -99,7 +99,7 @@ for entry in "${MODELS[@]}"; do
 
     # Run test
     echo "  Running test_vllm_models.py..."
-    python "$PROJECT_DIR/test_vllm_models.py" \
+    python "$PROJECT_DIR/pipeline/test_vllm_models.py" \
         --url "http://localhost:$PORT/v1" \
         --display-name "$DISPLAY_NAME" \
         --screening "$SCREENING" \

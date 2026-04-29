@@ -3,7 +3,12 @@
 Test the LLM verifier on a single post to see output quality.
 """
 
+import sys
 import json
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from storage.database import Database
 from generators.llm_verifier import SycophancyVerifier
 

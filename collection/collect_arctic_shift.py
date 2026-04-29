@@ -25,6 +25,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 
 sys.stdout.reconfigure(line_buffering=True)
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from storage.database import Database
 

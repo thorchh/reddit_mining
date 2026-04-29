@@ -22,10 +22,11 @@ from pathlib import Path
 import praw
 from dotenv import load_dotenv
 
-load_dotenv(Path(__file__).parent / ".env.local")
-load_dotenv(Path(__file__).parent / ".env")
+load_dotenv(Path(__file__).parent.parent / ".env.local")
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 sys.stdout.reconfigure(line_buffering=True)
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from collectors.reddit_client import RedditClient
 from collectors.post_collector import PostCollector

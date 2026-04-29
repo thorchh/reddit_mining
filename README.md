@@ -45,13 +45,13 @@ uv pip install -r requirements.txt
 export OPENAI_API_KEY="..."
 
 # Run a small test (20 posts, GPT-4o-mini)
-python test_openai_models.py --limit 20
+python pipeline/test_openai_models.py --limit 20
 
 # Evaluate the responses
-python evaluate_responses.py --input output/responses/<file>.json
+python pipeline/evaluate_responses.py --input output/responses/<file>.json
 
 # Generate report
-python generate_report.py --input output/evaluations/latest.json
+python pipeline/generate_report.py --input output/evaluations/latest.json
 ```
 
 ---
@@ -71,11 +71,11 @@ bash run_models_parallel.sh --limit 1000
 bash run_models_parallel.sh --post-ids 1qjlode,1q9q1pk
 
 # Evaluate after run completes
-python evaluate_responses.py \
+python pipeline/evaluate_responses.py \
   --input output/responses/vllm_Qwen2.5-7B_<timestamp>.json
 
 # Evaluate with a vLLM judge instead of GPT-4o
-python evaluate_responses.py \
+python pipeline/evaluate_responses.py \
   --input output/responses/<file>.json \
   --vllm-url http://localhost:8000/v1
 ```
@@ -155,13 +155,13 @@ output/
 
 ```bash
 # Collect from Arctic Shift dump
-python collect_arctic_shift.py
+python collection/collect_arctic_shift.py
 
 # Or collect live via Reddit API
-python collect_data.py
+python collection/collect_data.py
 
 # Screen collected data into test cases
-python screen_cases.py
+python pipeline/screen_cases.py
 ```
 
 ---
@@ -170,30 +170,42 @@ python screen_cases.py
 
 ```
 reddit_mining/
-  pipeline_config.py          ← start here for config
-  screen_cases.py
-  test_vllm_models.py
-  test_openai_models.py
-  evaluate_responses.py
-  generate_report.py
-  review_validation.py
-  run_models_parallel.sh
-  run_models.sh
-  run_webapp.sh               ← Streamlit UI
-  web_app.py
-  pipeline.py                 ← orchestration wrapper
-  collect_arctic_shift.py
-  collect_data.py
-  build_sycophancy_dataset.py
-  score_posts_for_sycophancy.py
-  run_sycophancy_evaluation.py  ← Dec 2025 VLM pipeline (vision)
-  main.py
+  README.md
+  requirements.txt
+  pipeline_config.py          ← central config (models, prompts, paths)
+  run_models_parallel.sh      ← HPC entry point (preferred)
+  run_models.sh               ← HPC entry point (sequential fallback)
+  
+  pipeline/                   ← active pipeline scripts (March 2026)
+    screen_cases.py
+    test_vllm_models.py
+    test_openai_models.py
+    evaluate_responses.py
+    generate_report.py
+    report_results.py
+    review_validation.py
+    test_verifier.py
+  
+  collection/                 ← data collection scripts
+    collect_arctic_shift.py
+    collect_data.py
+  
+  webapp/                     ← Streamlit UI
+    web_app.py
+    run_webapp.sh
+  
+  docs/                       ← component guides
+    LLM_VERIFIER_GUIDE.md
+    SCORING_APPROACH.md
+    FILE_STRUCTURE.md
+  
   generators/                 ← shared LLM verifiers and scorers
   collectors/                 ← Reddit API client
   processors/                 ← consensus extraction
   storage/                    ← SQLite interface
   config/                     ← settings and subreddit list
   utils/                      ← logger
+  
   output/                     ← all generated artifacts
   poster/                     ← conference poster diagrams
   archive/                    ← deprecated and one-shot scripts

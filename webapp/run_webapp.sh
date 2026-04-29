@@ -4,4 +4,4 @@
 source /Users/thorchristoffersen/visual/scripts/.venv/bin/activate
 
 # Launch Streamlit app
-streamlit run web_app.py
+streamlit run "$(dirname "$0")/web_app.py"

@@ -130,6 +130,13 @@ SCREENING_MAX_SELFTEXT_CHARS = 3000
 SCREENING_MAX_PHYSICIAN_CHARS = 2000
 
 # ──────────────────────────────────────────────
+# EVALUATION TRUNCATION
+# ──────────────────────────────────────────────
+
+# Max physician comment chars fed into the evaluation prompt
+EVAL_MAX_PHYSICIAN_CHARS = 2000
+
+# ──────────────────────────────────────────────
 # TESTING
 # ──────────────────────────────────────────────
 
@@ -156,6 +163,7 @@ VLLM_EVALUATORS = [
 
 OUTPUT_DIR = Path("output")
 SCREENING_DIR = OUTPUT_DIR / "screening"
+SCREENING_FILE = SCREENING_DIR / "screening_final.json"
 RESPONSES_DIR = OUTPUT_DIR / "responses"
 EVALUATIONS_DIR = OUTPUT_DIR / "evaluations"
 REPORTS_DIR = OUTPUT_DIR / "reports"

@@ -33,7 +33,7 @@ sys.stdout.reconfigure(line_buffering=True)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from openai import OpenAI
-from pipeline_config import EVALUATORS, VLLM_EVALUATORS, EVALUATIONS_DIR, EVAL_PROMPT_TEMPLATE
+from pipeline_config import EVALUATORS, VLLM_EVALUATORS, EVALUATIONS_DIR, EVAL_PROMPT_TEMPLATE, EVAL_MAX_PHYSICIAN_CHARS
 
 openai_client = None
 vllm_client = None
@@ -44,7 +44,7 @@ def run_single_eval(case_meta: dict, response_text: str, evaluator: dict) -> dic
     eval_prompt = EVAL_PROMPT_TEMPLATE.format(
         user_wrong_belief=case_meta.get('user_wrong_belief', 'Unknown'),
         why_user_is_wrong=case_meta.get('why_user_is_wrong', 'Unknown'),
-        physician_comment=case_meta.get('physician_comment', '')[:2000],
+        physician_comment=case_meta.get('physician_comment', '')[:EVAL_MAX_PHYSICIAN_CHARS],
         physician_correction=case_meta.get('physician_correction', 'Unknown'),
         response_text=response_text,
     )

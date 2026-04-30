@@ -16,8 +16,10 @@ import textwrap
 from pathlib import Path
 from collections import defaultdict
 
-RESPONSES_DIR = Path("output/responses")
-SCREENING_FILE = Path("output/screening/screening_final.json")
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from pipeline_config import RESPONSES_DIR, SCREENING_FILE
+from pipeline.common import load_responses
 
 
 def wrap(text, width=100, indent=6):
@@ -30,25 +32,6 @@ def truncate(text, max_chars=500):
     if len(text) <= max_chars:
         return text
     return text[:max_chars].rsplit(" ", 1)[0] + "..."
-
-
-def load_responses():
-    """Load all response files, deduplicate by (model, post_id, prompt_name), keep latest."""
-    all_responses = []
-    for f in sorted(RESPONSES_DIR.glob("vllm_*.json")):
-        data = json.loads(f.read_text())
-        all_responses.extend(data)
-
-    # Deduplicate: keep latest by timestamp
-    seen = {}
-    for r in all_responses:
-        if "error" in r:
-            continue
-        key = (r["model"], r["post_id"], r["prompt_name"])
-        if key not in seen or r.get("timestamp", "") > seen[key].get("timestamp", ""):
-            seen[key] = r
-
-    return list(seen.values())
 
 
 def analyze_sycophancy_signals(baseline_text, empathy_text):
@@ -123,7 +106,7 @@ def main():
     case_lookup = {c["post_id"]: c for c in screening}
 
     # Load responses
-    responses = load_responses()
+    responses = load_responses(RESPONSES_DIR)
     if not responses:
         print("No response files found")
         sys.exit(1)

@@ -14,11 +14,10 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
+sys.stdout.reconfigure(line_buffering=True)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from pipeline_config import REPORTS_DIR
-
-sys.stdout.reconfigure(line_buffering=True)
 
 
 def main():

@@ -15,26 +15,10 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
 
-RESPONSES_DIR = Path("output/responses")
-SCREENING_FILE = Path("output/screening/screening_final.json")
-EVALUATIONS_DIR = Path("output/evaluations")
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-
-def load_responses():
-    """Load all response files, deduplicate keeping latest."""
-    all_responses = []
-    for f in sorted(RESPONSES_DIR.glob("vllm_*.json")):
-        data = json.loads(f.read_text())
-        all_responses.extend(data)
-
-    seen = {}
-    for r in all_responses:
-        if "error" in r:
-            continue
-        key = (r["model"], r["post_id"], r["prompt_name"])
-        if key not in seen or r.get("timestamp", "") > seen[key].get("timestamp", ""):
-            seen[key] = r
-    return list(seen.values())
+from pipeline_config import RESPONSES_DIR, EVALUATIONS_DIR, REPORTS_DIR, SCREENING_FILE, SYSTEM_PROMPTS
+from pipeline.common import load_responses
 
 
 def load_evaluations():
@@ -74,7 +58,7 @@ def main():
     screening = json.loads(SCREENING_FILE.read_text())
     case_lookup = {c["post_id"]: c for c in screening}
 
-    responses = load_responses()
+    responses = load_responses(RESPONSES_DIR)
     evaluations = load_evaluations()
 
     # Build evaluation lookup
@@ -115,7 +99,7 @@ def main():
     w(f"")
     w(f"- **Cases**: {len(post_ids_sorted)}")
     w(f"- **Models**: {len(models_sorted)} ({', '.join(models_sorted)})")
-    w(f"- **System Prompts**: baseline, empathy_first")
+    w(f"- **System Prompts**: {', '.join(SYSTEM_PROMPTS.keys())}")
     w(f"- **Total Responses**: {len(responses)}")
     w(f"- **Evaluations Available**: {len(eval_lookup)}")
     w(f"")
@@ -488,7 +472,7 @@ def main():
     # Write output
     report_text = "\n".join(lines)
 
-    output_path = args.output or f"output/sycophancy_research/validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+    output_path = args.output or str(REPORTS_DIR / f"validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md")
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     Path(output_path).write_text(report_text)
 

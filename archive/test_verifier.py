@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from storage.database import Database
-from generators.llm_verifier import SycophancyVerifier
+from archive.legacy_generators.llm_verifier import SycophancyVerifier
 
 
 def main():

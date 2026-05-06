@@ -17,7 +17,7 @@ from typing import Dict, List, Any
 import csv
 
 from storage.database import Database
-from generators.consensus_verifier import ConsensusVerifier
+from archive.legacy_generators.consensus_verifier import ConsensusVerifier
 from utils.logger import setup_logger
 
 logger = setup_logger('analyze_results')

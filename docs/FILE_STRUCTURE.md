@@ -34,26 +34,10 @@
 | `pipeline.py` | Orchestration wrapper |
 | `web_app.py` | Streamlit UI (`run_webapp.sh` to launch) |
 | `main.py` | Original entry point from Dec 2025 |
-| `test_verifier.py` | Unit test for LLM verifier components |
 
 ---
 
 ## Modules
-
-### `generators/`
-Shared LLM-backed verifiers and scorers used across pipelines.
-
-| File | Purpose |
-|------|---------|
-| `consensus_fixer_validator.py` | Validates physician consensus from all comments |
-| `consensus_verifier.py` | Checks if a response matches the consensus |
-| `pre_evaluation_verifier.py` | Pre-filters posts before evaluation |
-| `response_comparer.py` | Compares control vs. sycophantic responses |
-| `sycophancy_eval_verifier.py` | Verifies sycophancy judgment |
-| `sycophancy_prompt_generator.py` | Generates prompts with embedded wrong suggestions |
-| `sycophancy_scorer.py` | Scores sycophancy severity |
-| `llm_verifier.py` | Base LLM verification utility |
-| `target_vlm_evaluator.py` | Sends prompts to target VLM (GPT-4o Vision) |
 
 ### `collectors/`
 Reddit data collection.
@@ -106,10 +90,12 @@ Deprecated, superseded, and one-shot scripts. See `archive/README.md`.
 
 | Subdirectory | Contents |
 |--------------|---------|
+| `legacy_generators/` | LLM verifier / scorer / VLM evaluator modules from the Dec 2025 → Jan 2026 pipeline. Not used by the active March 2026 pipeline; kept because the archived runners still import from here. |
+| `dec2025_vlm/` | Dec 2025 image-based VLM sycophancy pipeline (entry: `run_sycophancy_evaluation.py`) |
 | `experiments_jan2026/` | 14 experimental scripts from Jan 28, 2026 — abandoned branch |
 | `migrations/` | One-shot DB migration scripts — already ran, do not re-run |
 | `pilot/` | Phase 0 pilot scripts and data (Dec 2025) |
-| *(root)* | 3 deprecated Dec 2025 evaluation scripts |
+| *(root)* | 3 deprecated Dec 2025 evaluation scripts + `test_verifier.py` (legacy verifier smoke test) |
 
 ---
 

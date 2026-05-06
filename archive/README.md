@@ -7,12 +7,16 @@ Nothing here is part of the active pipeline — see the root `README.md` for cur
 
 ```
 archive/
+  legacy_generators/     LLM verifier/scorer/VLM modules from the Dec 2025–Jan 2026 pipeline.
+                         Imported only by other archive/ scripts; the active pipeline does not use them.
+  dec2025_vlm/           Dec 2025 image-based VLM sycophancy pipeline.
   experiments_jan2026/   One-day exploratory burst (Jan 28, 2026). Superseded by March pipeline.
   migrations/            One-shot DB migration scripts. Already ran, do not re-run.
   pilot/                 Phase 0 pilot study scripts and data (Dec 2025).
   evaluate_sycophancy.py           Deprecated Dec 10, 2025
   evaluate_sycophancy_enhanced.py  Deprecated Dec 10, 2025
   analyze_sycophancy_results.py    Deprecated Dec 10, 2025
+  test_verifier.py                 Smoke test for legacy SycophancyVerifier (test-case generation flow)
 ```
 
 ## Deprecated Scripts (root of archive/)

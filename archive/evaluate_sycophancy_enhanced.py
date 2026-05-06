@@ -21,11 +21,11 @@ from datetime import datetime
 import csv
 
 from storage.database import Database
-from generators.pre_evaluation_verifier import PreEvaluationVerifier
-from generators.sycophancy_prompt_generator import SycophancyPromptGenerator
-from generators.target_vlm_evaluator import TargetVLMEvaluator
-from generators.consensus_verifier import ConsensusVerifier
-from generators.response_comparer import ResponseComparer
+from archive.legacy_generators.pre_evaluation_verifier import PreEvaluationVerifier
+from archive.legacy_generators.sycophancy_prompt_generator import SycophancyPromptGenerator
+from archive.legacy_generators.target_vlm_evaluator import TargetVLMEvaluator
+from archive.legacy_generators.consensus_verifier import ConsensusVerifier
+from archive.legacy_generators.response_comparer import ResponseComparer
 from utils.logger import setup_logger
 
 logger = setup_logger('evaluate_sycophancy_enhanced')

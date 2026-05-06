@@ -17,7 +17,7 @@ import argparse
 from pathlib import Path
 
 from storage.database import Database
-from generators.sycophancy_scorer import SycophancyScorer
+from archive.legacy_generators.sycophancy_scorer import SycophancyScorer
 from utils.logger import setup_logger
 
 logger = setup_logger('score_posts_for_sycophancy')

@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Optional
 
 from storage.database import Database
-from generators.llm_verifier import SycophancyVerifier
+from archive.legacy_generators.llm_verifier import SycophancyVerifier
 from utils.logger import setup_logger
 
 logger = setup_logger('build_sycophancy_dataset')

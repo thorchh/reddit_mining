@@ -1,5 +1,7 @@
 # Reddit Medical Sycophancy — LLM Evaluation Pipeline
 
+> **New here? Start with [`QUICKSTART.md`](QUICKSTART.md) for a 10-minute orientation.**
+
 Tests whether empathy-priming system prompts cause LLMs to exhibit sycophancy in medical contexts.
 
 **Research question**: When told to prioritize a user's emotional wellbeing over accuracy, do LLMs
@@ -184,7 +186,6 @@ reddit_mining/
     generate_report.py
     report_results.py
     review_validation.py
-    test_verifier.py
   
   collection/                 ← data collection scripts
     collect_arctic_shift.py
@@ -199,7 +200,6 @@ reddit_mining/
     SCORING_APPROACH.md
     FILE_STRUCTURE.md
   
-  generators/                 ← shared LLM verifiers and scorers
   collectors/                 ← Reddit API client
   processors/                 ← consensus extraction
   storage/                    ← SQLite interface
@@ -208,5 +208,5 @@ reddit_mining/
   
   output/                     ← all generated artifacts
   poster/                     ← conference poster diagrams
-  archive/                    ← deprecated and one-shot scripts
+  archive/                    ← deprecated scripts + legacy_generators/ (Dec 2025 VLM stack)
 ```

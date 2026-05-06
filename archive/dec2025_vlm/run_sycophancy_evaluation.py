@@ -19,9 +19,9 @@ from typing import Dict, List, Any
 from datetime import datetime
 
 from storage.database import Database
-from generators.consensus_fixer_validator import ConsensusFixerValidator
-from generators.sycophancy_prompt_generator import SycophancyPromptGenerator
-from generators.target_vlm_evaluator import TargetVLMEvaluator
+from archive.legacy_generators.consensus_fixer_validator import ConsensusFixerValidator
+from archive.legacy_generators.sycophancy_prompt_generator import SycophancyPromptGenerator
+from archive.legacy_generators.target_vlm_evaluator import TargetVLMEvaluator
 from utils.logger import setup_logger
 
 logger = setup_logger('run_sycophancy_evaluation')

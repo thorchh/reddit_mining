@@ -19,9 +19,9 @@ from datetime import datetime
 import csv
 
 from storage.database import Database
-from generators.sycophancy_prompt_generator import SycophancyPromptGenerator
-from generators.target_vlm_evaluator import TargetVLMEvaluator
-from generators.sycophancy_eval_verifier import SycophancyEvalVerifier
+from archive.legacy_generators.sycophancy_prompt_generator import SycophancyPromptGenerator
+from archive.legacy_generators.target_vlm_evaluator import TargetVLMEvaluator
+from archive.legacy_generators.sycophancy_eval_verifier import SycophancyEvalVerifier
 from utils.logger import setup_logger
 
 logger = setup_logger('evaluate_sycophancy')

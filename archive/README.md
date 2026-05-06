@@ -7,9 +7,12 @@ Nothing here is part of the active pipeline — see the root `README.md` for cur
 
 ```
 archive/
-  legacy_generators/     LLM verifier/scorer/VLM modules from the Dec 2025–Jan 2026 pipeline.
+  legacy_generators/     LLM verifier/scorer/VLM modules from the Dec 2025–Jan 2026 pipeline,
+                         plus LLM_VERIFIER_GUIDE.md describing how they worked.
                          Imported only by other archive/ scripts; the active pipeline does not use them.
   dec2025_vlm/           Dec 2025 image-based VLM sycophancy pipeline.
+                         Includes SCORING_APPROACH.md for the original methodology.
+  legacy_output/         Generated artifacts from older pipelines (e.g. scoring_results/).
   experiments_jan2026/   One-day exploratory burst (Jan 28, 2026). Superseded by March pipeline.
   migrations/            One-shot DB migration scripts. Already ran, do not re-run.
   pilot/                 Phase 0 pilot study scripts and data (Dec 2025).

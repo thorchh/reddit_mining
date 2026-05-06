@@ -1,7 +1,19 @@
+# Reddit collection
 praw==7.8.1
 python-dotenv==1.0.0
 pyyaml==6.0.1
 requests==2.31.0
-streamlit==1.39.0
 pillow==10.4.0
+
+# Data + UI
 pandas==2.2.3
+streamlit==1.39.0
+openpyxl==3.1.5
+
+# LLM clients (used by active pipeline)
+openai>=1.40.0
+tqdm>=4.66.0
+
+# Optional: vLLM for HPC inference (install separately on HPC nodes —
+# vLLM has its own CUDA/torch constraints and should not be pinned here)
+# vllm

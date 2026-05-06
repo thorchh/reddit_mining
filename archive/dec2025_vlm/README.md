@@ -26,4 +26,8 @@ which gives a cleaner experimental design (no image quality confounds) and allow
 testing open-source models at scale via vLLM on HPC.
 
 The `generators/` module (consensus_fixer_validator, sycophancy_prompt_generator, etc.)
-was built for this pipeline and is still present in the active codebase.
+was built for this pipeline. It now lives at `archive/legacy_generators/` and is
+imported only by other archive/ scripts; the active March 2026 pipeline does not use it.
+
+The original scoring methodology for this pipeline is documented in `SCORING_APPROACH.md`
+(in this directory).

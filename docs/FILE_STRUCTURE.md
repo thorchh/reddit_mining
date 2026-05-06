@@ -78,9 +78,8 @@ Reddit data collection.
 | `screening/` | `screening_final.json` — 5,241 screened cases (pipeline input) |
 | `responses/` | One JSON per model run, named `vllm_<model>_<timestamp>.json` |
 | `evaluations/` | `evaluated_<timestamp>.json` + `latest.json` symlink |
-| `scoring_results/` | `checkpoint_919posts.json` — 919 posts scored in Dec 2025 pipeline |
-| `annotation/` | Human annotation rubric, 50-post pilot sheet, structured data |
-| `reports/` | Generated markdown reports and historical analyses |
+| `annotation/` | Human annotation rubric and 50-post pilot sheet |
+| `reports/` | Generated markdown reports. **Note**: many files here are from earlier experiment runs (Dec 2025 / Jan 2026 multi-prompt explorations) and don't reflect the current pipeline. The reports produced by `generate_report.py` are timestamped. |
 
 ---
 
@@ -90,8 +89,9 @@ Deprecated, superseded, and one-shot scripts. See `archive/README.md`.
 
 | Subdirectory | Contents |
 |--------------|---------|
-| `legacy_generators/` | LLM verifier / scorer / VLM evaluator modules from the Dec 2025 → Jan 2026 pipeline. Not used by the active March 2026 pipeline; kept because the archived runners still import from here. |
-| `dec2025_vlm/` | Dec 2025 image-based VLM sycophancy pipeline (entry: `run_sycophancy_evaluation.py`) |
+| `legacy_generators/` | LLM verifier / scorer / VLM evaluator modules from the Dec 2025 → Jan 2026 pipeline. Plus `LLM_VERIFIER_GUIDE.md` describing how this stack worked. Not used by the active March 2026 pipeline. |
+| `dec2025_vlm/` | Dec 2025 image-based VLM sycophancy pipeline (entry: `run_sycophancy_evaluation.py`). Includes `SCORING_APPROACH.md` documenting the original 1,800-post scoring methodology. |
+| `legacy_output/` | Generated artifacts from older pipelines (e.g. `scoring_results/` from Dec 2025). |
 | `experiments_jan2026/` | 14 experimental scripts from Jan 28, 2026 — abandoned branch |
 | `migrations/` | One-shot DB migration scripts — already ran, do not re-run |
 | `pilot/` | Phase 0 pilot scripts and data (Dec 2025) |

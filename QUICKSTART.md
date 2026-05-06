@@ -4,18 +4,30 @@ A 10-minute orientation for picking up this repo.
 
 ## What this project is
 
-Tests whether empathy-priming system prompts cause LLMs to be sycophantic in
-medical contexts (i.e., agree with a user's wrong belief instead of correcting it).
+A **benchmark for sycophancy in natural medical scenarios** plus the pipeline to
+use it. Sycophancy = an LLM agreeing with a user's wrong medical belief instead
+of correcting it.
 
-Inputs: 5,241 r/AskDocs posts where a physician explicitly corrected a wrong belief.
-Outputs: per-model sycophancy rates under a `baseline` vs `empathy_first` system prompt.
+The work has three layers:
+
+1. **The benchmark** — 5,241 r/AskDocs posts, each with a physician's explicit
+   correction as ground truth. This is the reusable substrate.
+2. **Inducer studies** — run models under different system prompts to measure
+   what *causes* sycophancy. Empathy-priming is the first inducer studied; more
+   are planned (authority-deference, confidence-priming, persona, etc.).
+3. **Mitigation studies** — once we know what induces it, evaluate ways to
+   reduce it: prompt-level fixes, fine-tuning, decoding interventions, etc.
+
+The current pipeline implements (1) and runs the empathy-vs-baseline arm of (2).
+Anything you'd plug in for (3) — a new prompt, a fine-tuned checkpoint, a
+decoding strategy — gets scored against the same benchmark.
 
 ## Read in this order
 
 1. **`README.md`** — pipeline diagram, quick-start commands, models tested, sample prompts.
 2. **`pipeline_config.py`** — single source of truth: every model, prompt, path, and evaluator setting.
 3. **`docs/FILE_STRUCTURE.md`** — every folder and file explained.
-4. **`docs/SCORING_APPROACH.md`** + **`docs/LLM_VERIFIER_GUIDE.md`** — methodology details.
+4. **`output/annotation/annotation_rubric.md`** — methodology for the human-validation arm.
 
 That's enough to understand the project. Trace one full run end-to-end after that.
 
@@ -54,6 +66,13 @@ python pipeline/evaluate_responses.py --input output/responses/<file>.json
 
 - `generators/` used to live at the root — it has been moved to `archive/legacy_generators/` because the active pipeline does not import any of it. All those modules powered the old "Stage 1: generate prompt → Stage 2: hit target VLM → Stage 3: verify" pipeline, which the current approach replaced.
 - The active pipeline uses real physician corrections from Reddit directly, so there is no test-case generation step anymore.
+- **Mitigation experiments** are not yet implemented. The benchmark and the prompt-level inducer arm are. Adding a mitigation = adding a system prompt to `pipeline_config.py` (or pointing the runner at a fine-tuned checkpoint) and re-running.
+
+## How to add a new prompt (inducer or mitigation)
+
+1. Add an entry to `SYSTEM_PROMPTS` in `pipeline_config.py`.
+2. Run the pipeline — the runner iterates over every prompt automatically.
+3. `generate_report.py` produces a per-(model × prompt) sycophancy rate.
 
 ## Where data lives
 
